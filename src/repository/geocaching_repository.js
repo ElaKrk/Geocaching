@@ -10,4 +10,3 @@ async function addGeocacheToDbFile(newGeocachingLocation) {
 }
 
 module.exports = {addGeocacheToDbFile};
-

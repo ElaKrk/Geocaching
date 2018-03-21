@@ -1,8 +1,8 @@
 const express = require('express');
 const path = require('path');
-const chalk = require('chalk');
 const bodyParser = require('body-parser');
-const moment = require('moment');
+
+const {logRequest, logError} = require('./logging/log');
 const {addGeocacheToDbFile} = require('./repository/geocaching_repository');
 
 const app = express();
@@ -12,16 +12,8 @@ app.use(express.static(
 ));
 
 app.use(bodyParser.json());
-
 app.use(bodyParser.urlencoded({ extended: false }));
 
-
-function logRequest(req) {
-    const formattedTime = moment().format('lll');
-    console.log(
-       `${chalk.blue(formattedTime)} ${chalk.yellow(req.connection.remoteAddress)} ${chalk.green(req.method)} ${chalk.red(JSON.stringify(req.body))}`
-    )
-}
 
 app.get('/geocaching', (req, res) => {
     logRequest(req);
@@ -35,6 +27,7 @@ app.post('/geocaching', async (req, res) => {
         await addGeocacheToDbFile(newGeocachingLocation);
         res.json({result: 'ok'});
     } catch (error) {
+        logError(error);
         res.json({result: 'error'});
     }
     
