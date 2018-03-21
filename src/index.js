@@ -3,6 +3,7 @@ const path = require('path');
 const chalk = require('chalk');
 const bodyParser = require('body-parser');
 const moment = require('moment');
+const {addGeocacheToDbFile} = require('./repository/geocaching_repository');
 
 const app = express();
 
@@ -11,6 +12,9 @@ app.use(express.static(
 ));
 
 app.use(bodyParser.json());
+
+app.use(bodyParser.urlencoded({ extended: false }));
+
 
 function logRequest(req) {
     const formattedTime = moment().format('lll');
@@ -24,9 +28,16 @@ app.get('/geocaching', (req, res) => {
     res.json(`Get message`);
 });
 
-app.post('/geocaching', (req, res) => {
-    logRequest(req)
-    res.json(`Post`);
+app.post('/geocaching', async (req, res) => {
+    logRequest(req);
+    const newGeocachingLocation = {...req.body};
+    try {
+        await addGeocacheToDbFile(newGeocachingLocation);
+        res.json({result: 'ok'});
+    } catch (error) {
+        res.json({result: 'error'});
+    }
+    
 });
 
 app.put('/geocaching', (req, res) => {
