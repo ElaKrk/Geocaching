@@ -9,4 +9,14 @@ async function addGeocacheToDbFile(newGeocachingLocation) {
     await saveToFile([{...newGeocachingLocation, uuid}, ...arrayOfGeolocation]);
 }
 
-module.exports = {addGeocacheToDbFile};
+async function changeGeocacheInDbFile(newGeocachingLocation, uuid) {
+    const arrayOfGeolocation = await readFile();
+    const index = arrayOfGeolocation.findIndex( el => el.uuid === uuid);
+    const pre = arrayOfGeolocation.slice(0, index);
+    const post = arrayOfGeolocation.slice(index + 1);
+    const updatedElement = {...newGeocachingLocation, uuid};
+    await saveToFile([...pre, updatedElement, ...post]);
+}
+
+
+module.exports = {addGeocacheToDbFile, changeGeocacheInDbFile};

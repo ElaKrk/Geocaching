@@ -3,7 +3,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 
 const {logRequest, logError} = require('./logging/log');
-const {addGeocacheToDbFile} = require('./repository/geocaching_repository');
+const {addGeocacheToDbFile, changeGeocacheInDbFile} = require('./repository/geocaching_repository');
 
 const app = express();
 
@@ -12,7 +12,6 @@ app.use(express.static(
 ));
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
 
 
 app.get('/geocaching', (req, res) => {
@@ -33,9 +32,16 @@ app.post('/geocaching', async (req, res) => {
     
 });
 
-app.put('/geocaching', (req, res) => {
+app.put('/geocaching/:id', async (req, res) => {
     logRequest(req)
-    res.json(`Put`);
+    const newGeocachingLocation = {...req.body};
+    try {
+        await changeGeocacheInDbFile(newGeocachingLocation, req.params.id);
+        res.json({result: 'ok'});
+    } catch (error) {
+        logError(error);
+        res.json({result: 'error'});
+    }
 });
 
 app.delete('/geocaching', (req, res) => {
