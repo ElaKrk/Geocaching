@@ -32,7 +32,6 @@ function getPreAndPost(arrayOfGeolocation, index){
 
 async function changeGeocacheInDbFile(newGeocachingLocation, uuid) {
     const arrayOfGeolocation = await readFile();
-
     const index = findIndexOrThrow(arrayOfGeolocation, uuid);
     const oldGeolocation = arrayOfGeolocation[index];
     

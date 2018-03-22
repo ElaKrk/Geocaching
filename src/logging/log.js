@@ -1,5 +1,10 @@
 const chalk = require('chalk');
-const log = console.log;
+const log = (...arg) => {
+    if (process.env.NODE_ENV === "test"){
+        return;
+    }
+    console.log(...arg);
+}
 const moment = require('moment');
 
 function logError(err) {
