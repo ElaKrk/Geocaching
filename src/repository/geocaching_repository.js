@@ -14,30 +14,42 @@ async function addGeocacheToDbFile(newGeocachingLocation) {
     await saveToFile([{...newGeocachingLocation, uuid}, ...arrayOfGeolocation]);
 }
 
-async function changeGeocacheInDbFile(newGeocachingLocation, uuid) {
-    const arrayOfGeolocation = await readFile();
+function findIndexOrThrow(arrayOfGeolocation, uuid) {
     const index = arrayOfGeolocation.findIndex( el => el.uuid === uuid);
-    const oldGeolocation = arrayOfGeolocation[index];
     if (index < 0) {
-        throw new Error("Cannot change the geolocation - record does not exist")
+        throw new Error("Record does not exist")
     }
+    
+    return index;
+}
+
+function getPreAndPost(arrayOfGeolocation, index){
     const pre = arrayOfGeolocation.slice(0, index);
     const post = arrayOfGeolocation.slice(index + 1);
+    return {pre, post};
+}
+
+
+async function changeGeocacheInDbFile(newGeocachingLocation, uuid) {
+    const arrayOfGeolocation = await readFile();
+
+    const index = findIndexOrThrow(arrayOfGeolocation, uuid);
+    const oldGeolocation = arrayOfGeolocation[index];
+    
+    const {pre, post} = getPreAndPost(arrayOfGeolocation, index)
     const updatedElement = {...newGeocachingLocation, uuid};
+    
     await saveToFile([...pre, updatedElement, ...post]);
-    const newGeolocation = arrayOfGeolocation[index];
-    logOldAndNew(oldGeolocation, newGeolocation);
+    logOldAndNew(oldGeolocation, updatedElement);
 }
 
 async function deleteGeocacheInDbFile(uuid) {
     const arrayOfGeolocation = await readFile();
-    const index = arrayOfGeolocation.findIndex( el => el.uuid === uuid);
+
+    const index = findIndexOrThrow(arrayOfGeolocation, uuid);
     const removedGeolocation = arrayOfGeolocation[index];
-    if (index < 0) {
-        throw new Error("Cannot delete the geolocation - record does not exist")
-    }
-    const pre = arrayOfGeolocation.slice(0, index);
-    const post = arrayOfGeolocation.slice(index + 1);
+    
+    const {pre, post} = getPreAndPost(arrayOfGeolocation, index)
     await saveToFile([...pre, ...post]);
     logRemoved(removedGeolocation);
 }

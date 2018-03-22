@@ -66,7 +66,7 @@ describe("repository", () => {
             try {
                 await changeGeocacheInDbFile(newRecord, uuid);
             } catch(e) {
-                expect(e.message).toEqual("Cannot change the geolocation - record does not exist")
+                expect(e.message).toEqual("Record does not exist")
             }
         })
     })
@@ -93,7 +93,7 @@ describe("repository", () => {
             try {
                 await deleteGeocacheInDbFile(uuid);
             } catch(e) {
-                expect(e.message).toEqual("Cannot delete the geolocation - record does not exist")
+                expect(e.message).toEqual("Record does not exist")
             }
         })
     })
