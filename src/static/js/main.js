@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
         const locationField = parentElement.querySelector("#location");
         const descriptionField = parentElement.querySelector("#description");
         const userField = parentElement.querySelector("#user");
-        
+
         const title = titleField.value;
         const location = locationField.value;
         const description = descriptionField.value;
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
         const boxFormToModify = document.querySelector(".box-form-to-modify");
         const { title, location, description, user } = getInputValues(boxFormToModify);
-        
+
         const tableHeader = document.querySelector(".active");
         const uuid = tableHeader.getAttribute("data-uuid");
 
@@ -97,6 +97,17 @@ document.addEventListener("DOMContentLoaded", function (event) {
                 'Content-Type': 'application/json',
             }
         })
+    }
+
+    function deleteGeolocation(event) {
+
+        const tableHeader = event.target.parentNode;
+        const uuid = tableHeader.getAttribute("data-uuid");
+
+        return fetch(`/geocaching/${uuid}`, {
+            method: "DELETE"
+        })
+
     }
 
     function showOrHideFormToModify(event) {
@@ -121,6 +132,31 @@ document.addEventListener("DOMContentLoaded", function (event) {
         }
     }
 
+
+
+    async function deleteGeolocationAndUpdateTable(event) {
+        event.preventDefault();
+        if (confirm("Are you sure you want to delete this geocache permanently?")) {
+            await deleteGeolocation(event);
+
+            const table = await createTableWithData();
+            boxTable.appendChild(table);
+
+            initMap();
+        }
+    }
+
+    function createButton(modifyBtnText, modifyBtnClass, modifyBtnFn) {
+        const buttonShowFormToModify = document.createElement("button");
+
+        buttonShowFormToModify.innerText = modifyBtnText;
+        buttonShowFormToModify.setAttribute("class", modifyBtnClass);
+        buttonShowFormToModify.addEventListener("click", modifyBtnFn);
+
+        return buttonShowFormToModify;
+    }
+
+
     function createRowWithTitle(geocache) {
         const tableRow = document.createElement("tr");
         const tableHeader = document.createElement("th");
@@ -129,11 +165,17 @@ document.addEventListener("DOMContentLoaded", function (event) {
         tableHeader.colSpan = 2;
         tableHeader.setAttribute("class", "title");
 
-        const buttonShowFormToModify = document.createElement("button");
-        buttonShowFormToModify.innerText = "Modify";
-        buttonShowFormToModify.setAttribute("class", "button--show-form-to-modify");
-        buttonShowFormToModify.addEventListener("click", showOrHideFormToModify);
-       
+        const modifyBtnText = "Modify",
+            modifyBtnClass = "button--show-form-to-modify",
+            modifyBtnFn = showOrHideFormToModify;
+        const buttonShowFormToModify = createButton(modifyBtnText, modifyBtnClass, modifyBtnFn);
+
+        const deleteGeoBtnText = "Delete",
+            deleteGeoBtnClass = "button--del-geolocation",
+            deleteGeoBtnFn = deleteGeolocationAndUpdateTable;
+        const buttondeleteGeolocation = createButton(deleteGeoBtnText, deleteGeoBtnClass, deleteGeoBtnFn);
+
+        tableHeader.appendChild(buttondeleteGeolocation);
         tableHeader.appendChild(buttonShowFormToModify);
 
         return tableHeader;
@@ -188,7 +230,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     async function createTableWithData() {
         boxTable.innerText = "";
-        
+
         const table = document.createElement("table");
         table.setAttribute("class", "table-data");
 
@@ -210,6 +252,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
         const table = await createTableWithData();
         boxTable.appendChild(table);
+
+        initMap();
     }
 
     function createFormToModify() {
@@ -227,13 +271,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
         return divWithForm;
     }
 
-    function clearInputValues(){
+    function clearInputValues() {
 
         const title = document.getElementById("title");
         const location = document.getElementById("location");
         const description = document.getElementById("description");
         const user = document.getElementById("user");
-        
+
         title.value = "";
         location.value = "";
         description.value = "";
@@ -244,7 +288,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
         event.preventDefault();
 
         const { title, location, description, user } = getInputValues(boxForm);
-        
+
 
         fetch('/geocaching', {
             method: "POST",
@@ -263,6 +307,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
                 const tableBody = createTableContentFromData(data.data);
                 const table = document.querySelector(".table-data");
                 table.appendChild(tableBody);
+                initMap();
             });
 
         clearInputValues();
@@ -272,19 +317,71 @@ document.addEventListener("DOMContentLoaded", function (event) {
         const table = await createTableWithData();
 
         boxTable.appendChild(table);
-        
+
         const id = "form--add",
             action = "/geocaching",
             method = "POST",
             buttonInnerText = "Add geolocation";
         const form = createForm(id, action, method, buttonInnerText);
         form.addEventListener('submit', addGeoLocation);
-        
+
         boxForm.appendChild(form);
     }
 
-
     window.addEventListener('load', createTableAndForm);
-    
+
 })
 
+async function getCoordinates(location) {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${location}&key=AIzaSyCQ1KmHMwenpfYzaBOQ5PPNRCPmiDbQzS4`;
+
+    return fetch(url)
+        .then(result => result.json())
+        .then(data => {
+            const coordinates = data.results[0].geometry.location;
+            return coordinates;
+        });
+
+}
+
+async function fetchGeocaches() {
+    const jsonData = await fetch('/geocaching')
+        .then(result => result.json());
+
+    return jsonData.data;
+}
+
+async function getEnrichedGeocaches() {
+    const geocaches = await fetchGeocaches();
+
+    const listOfPromises = geocaches.map(async (geocache) => {
+        const coordinates = await getCoordinates(geocache.location)
+        return {
+            ...geocache,
+            coordinates
+        }
+    });
+    return Promise.all(listOfPromises);
+
+}
+
+
+async function initMap() {
+    const enrichedGeocaches = await getEnrichedGeocaches();
+
+    const krakow = { lat: 50.0647, lng: 19.9450 };
+    const map = new google.maps.Map(document.querySelector(".map"), {
+        zoom: 12,
+        center: krakow
+    });
+    const listOfMarkers = [];
+
+    enrichedGeocaches.forEach(({coordinates, location}) => {
+        const marker = new google.maps.Marker({
+            position: coordinates,
+            map: map,
+            title: location
+        });
+        listOfMarkers.push(marker);
+    })
+}
