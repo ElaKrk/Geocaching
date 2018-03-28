@@ -1,0 +1,47 @@
+.title--main {
+    text-align: center;
+}
+.content--main {
+    width: 80%;
+    margin: 0 auto;
+}
+.table-data {
+    width: 100%;
+    margin: 0 auto;
+    background-color: rgb(231, 231, 231);
+    border-collapse: collapse;
+    border: 1px solid black;
+    empty-cells: show;
+    text-align: left;
+}
+.table-data th {
+    border: 1px solid black;
+    width: 10em;
+}
+.table-data tr {
+    border: 1px solid black;
+}
+/* .table-data tr:not(.title) {
+    display: none;
+} */
+form {
+    width: 20em;
+    margin: 2em 0;
+}
+label {
+    display: block;
+}
+textarea {
+    width: 95%;
+}
+.title {
+    background-color: rgb(39, 39, 138);
+    color: #FFF;
+}
+.button--show-form-to-modify {
+    float: right;
+}
+.popup-form {
+    position: relative;
+    top: 0;
+}

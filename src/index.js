@@ -10,7 +10,7 @@ const {getGeocacheFromDbFile, addGeocacheToDbFile, changeGeocacheInDbFile, delet
 const app = express();
 
 app.use(express.static(
-    path.join(__dirname, '')
+    path.join(__dirname, '/static')
 ));
 
 app.use(bodyParser.json());
@@ -31,8 +31,8 @@ app.post('/geocaching', async (req, res) => {
     logPostRequest(req);
     const newGeocachingLocation = {...req.body};
     try {
-        await addGeocacheToDbFile(newGeocachingLocation);
-        res.json({result: 'ok'});
+        const newRecord = await addGeocacheToDbFile(newGeocachingLocation);
+        res.json({result: 'ok', data: newRecord});
     } catch (error) {
         logError(error);
         res.json({result: 'error'});

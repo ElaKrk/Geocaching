@@ -11,7 +11,9 @@ async function addGeocacheToDbFile(newGeocachingLocation) {
     const arrayOfGeolocation = await readFile();
 
     const uuid = uuidv4();
-    await saveToFile([{...newGeocachingLocation, uuid}, ...arrayOfGeolocation]);
+    const newRecord = {...newGeocachingLocation, uuid};
+    await saveToFile([newRecord, ...arrayOfGeolocation]);
+    return newRecord;
 }
 
 function findIndexOrThrow(arrayOfGeolocation, uuid) {
@@ -40,6 +42,7 @@ async function changeGeocacheInDbFile(newGeocachingLocation, uuid) {
     
     await saveToFile([...pre, updatedElement, ...post]);
     logOldAndNew(oldGeolocation, updatedElement);
+    return updatedElement;
 }
 
 async function deleteGeocacheInDbFile(uuid) {
