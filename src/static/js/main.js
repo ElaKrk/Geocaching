@@ -11,8 +11,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
         const locationField = parentElement.querySelector("#location");
         const descriptionField = parentElement.querySelector("#description");
         const userField = parentElement.querySelector("#user");
+        
+        const title = titleField.value;
+        const location = locationField.value;
+        const description = descriptionField.value;
+        const user = userField.value;
 
-        return { titleField, locationField, descriptionField, userField };
+        return { title, location, description, user };
     }
 
 
@@ -75,16 +80,12 @@ document.addEventListener("DOMContentLoaded", function (event) {
     function modifyGeoLocation() {
 
         const boxFormToModify = document.querySelector(".box-form-to-modify");
-        const { titleField, locationField, descriptionField, userField } = getInputValues(boxFormToModify);
-        const title = titleField.value;
-        const location = locationField.value;
-        const description = descriptionField.value;
-        const user = userField.value;
-
+        const { title, location, description, user } = getInputValues(boxFormToModify);
+        
         const tableHeader = document.querySelector(".active");
         const uuid = tableHeader.getAttribute("data-uuid");
 
-        fetch(`/geocaching/${uuid}`, {
+        return fetch(`/geocaching/${uuid}`, {
             method: "PUT",
             body: JSON.stringify({
                 title,
@@ -98,6 +99,28 @@ document.addEventListener("DOMContentLoaded", function (event) {
         })
     }
 
+    function showOrHideFormToModify(event) {
+        event.preventDefault();
+        const buttonShowFormToModify = event.target;
+        const tableHeader = buttonShowFormToModify.parentNode;
+
+        if (hideFormToModify === false) {
+            buttonShowFormToModify.innerText = "X";
+            const divWithForm = createFormToModify();
+            tableHeader.appendChild(divWithForm);
+            tableHeader.setAttribute("class", "active");
+
+            hideFormToModify = true;
+        } else {
+            buttonShowFormToModify.innerText = "Modify";
+            const divWithForm = document.querySelector(".box-form-to-modify");
+            tableHeader.removeChild(divWithForm);
+            tableHeader.setAttribute("class", "title");
+
+            hideFormToModify = false;
+        }
+    }
+
     function createRowWithTitle(geocache) {
         const tableRow = document.createElement("tr");
         const tableHeader = document.createElement("th");
@@ -109,24 +132,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
         const buttonShowFormToModify = document.createElement("button");
         buttonShowFormToModify.innerText = "Modify";
         buttonShowFormToModify.setAttribute("class", "button--show-form-to-modify");
-        buttonShowFormToModify.addEventListener("click", (e) => {
-            e.preventDefault();
-            if (hideFormToModify === false) {
-                buttonShowFormToModify.innerText = "X";
-                const divWithForm = createFormToModify();
-                tableHeader.appendChild(divWithForm);
-                tableHeader.setAttribute("class", "active");
-                hideFormToModify = true;
-            } else {
-                buttonShowFormToModify.innerText = "Modify";
-                const divWithForm = document.querySelector(".box-form-to-modify");
-                tableHeader.removeChild(divWithForm);
-                tableHeader.setAttribute("class", "title");
-
-                hideFormToModify = false;
-            }
-        });
-
+        buttonShowFormToModify.addEventListener("click", showOrHideFormToModify);
+       
         tableHeader.appendChild(buttonShowFormToModify);
 
         return tableHeader;
@@ -179,7 +186,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     }
 
-    async function showDataInTable() {
+    async function createTableWithData() {
         boxTable.innerText = "";
         
         const table = document.createElement("table");
@@ -191,9 +198,19 @@ document.addEventListener("DOMContentLoaded", function (event) {
             const tableBody = createTableContentFromData(geocache);
             table.appendChild(tableBody);
         })
-        boxTable.appendChild(table);
+        return table;
     }
 
+    async function modifyGeolocationAndCreateTableWithData(event) {
+        event.preventDefault();
+
+        await modifyGeoLocation();
+
+        hideFormToModify = false;
+
+        const table = await createTableWithData();
+        boxTable.appendChild(table);
+    }
 
     function createFormToModify() {
         const divWithForm = document.createElement("div");
@@ -204,29 +221,30 @@ document.addEventListener("DOMContentLoaded", function (event) {
             method = "PUT",
             buttonInnerText = "Modify geolocation";
         const form = createForm(id, action, method, buttonInnerText);
-        form.addEventListener('submit', (event) => {
-            event.preventDefault();
-
-            modifyGeoLocation();
-
-            hideFormToModify = false;
-
-            showDataInTable();
-        })
+        form.addEventListener('submit', modifyGeolocationAndCreateTableWithData);
 
         divWithForm.appendChild(form);
         return divWithForm;
     }
 
+    function clearInputValues(){
+
+        const title = document.getElementById("title");
+        const location = document.getElementById("location");
+        const description = document.getElementById("description");
+        const user = document.getElementById("user");
+        
+        title.value = "";
+        location.value = "";
+        description.value = "";
+        user.value = "";
+    }
 
     function addGeoLocation(event) {
         event.preventDefault();
 
-        const { titleField, locationField, descriptionField, userField } = getInputValues(boxForm);
-        const title = titleField.value;
-        const location = locationField.value;
-        const description = descriptionField.value;
-        const user = userField.value;
+        const { title, location, description, user } = getInputValues(boxForm);
+        
 
         fetch('/geocaching', {
             method: "POST",
@@ -245,26 +263,28 @@ document.addEventListener("DOMContentLoaded", function (event) {
                 const tableBody = createTableContentFromData(data.data);
                 const table = document.querySelector(".table-data");
                 table.appendChild(tableBody);
-        
             });
 
-        titleField.value = "";
-        locationField.value = "";
-        descriptionField.value = "";
-        userField.value = "";
+        clearInputValues();
     }
 
-    window.addEventListener('load', async () => {
-        await showDataInTable();
+    async function createTableAndForm() {
+        const table = await createTableWithData();
+
+        boxTable.appendChild(table);
+        
         const id = "form--add",
             action = "/geocaching",
             method = "POST",
             buttonInnerText = "Add geolocation";
         const form = createForm(id, action, method, buttonInnerText);
-        boxForm.appendChild(form);
         form.addEventListener('submit', addGeoLocation);
-    })
+        
+        boxForm.appendChild(form);
+    }
 
 
+    window.addEventListener('load', createTableAndForm);
+    
 })
 
