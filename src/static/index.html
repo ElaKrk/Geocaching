@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+
+
 <html lang="en">
 
 <head>
@@ -13,15 +15,41 @@
 </head>
 
 <body>
-    <h1 class="title--main">Geocaching portal</h1>
+    <header class="header">
+        <h1 class="title--main">Geocaching portal</h1>
+    </header>
     <main class="content--main">
-        <h2>Play with us!</h2>
-        <p>Geocaching is fun. You can add and solve puzzles hidden in many different locations all around Krakow city. Help
-            us develop huge web of fun treasures! Add or modify your own locations with hidden puzzles!</p>
-        <div class="map"></div>
-        <div class="box-table"></div>
-        <div class="box-form"></div>
+
+        <div class="container container-flex">
+            <div class="container--small">
+                <h2 class="font--left font--position-right">Play with us!</h2>
+            </div>
+            <div class="container--with-padding">
+                <p>Geocaching is a great outdoor treasure hunting game. Here you can add, modify and delete geocaches all around
+                    the Krakow city. Help us develop huge web of treasures! Add or modify your own locations with hidden
+                    puzzles! In "Geocache-description" field you should add description of a riddle hidden in the geocache.
+                    Please delete only destroyed or non-existing geocaches.</p>
+            </div>
+        </div>
+        <div class="container">
+            <div class="map js-map"></div>
+        </div>
+        <div class="container">
+            <h2>Table with geocaching locations</h2>
+            <div class="box-table js-box-table"></div>
+        </div>
+        <div class="container container-flex">
+            <div class="container-position--left font--left">
+                <h2>Here you can add new geocaching location!</h2>
+                <img class="img--right" alt="arrow" src="./images/arrow.png">
+            </div>
+            <div class="box-form js-box-form"></div>
+        </div>
     </main>
+    <footer class="footer">
+        In case of any questions or problems, please contact us by e-mail:
+        <strong>elukaszewicz03@gmail.com</strong>.
+    </footer>
     <script src="./js/main.js"></script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCQ1KmHMwenpfYzaBOQ5PPNRCPmiDbQzS4&callback=initMap">
     </script>

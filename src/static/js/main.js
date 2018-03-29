@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", function (event) {
 
 
-    const boxTable = document.querySelector(".box-table");
-    const boxForm = document.querySelector(".box-form");
+    const boxTable = document.querySelector(".js-box-table");
+    const boxForm = document.querySelector(".js-box-form");
 
     let hideFormToModify = false;
 
@@ -33,16 +33,16 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
 
         const inputs = [{
-            name: "Title:",
+            name: "Title",
             id: "title"
         }, {
-            name: "Location:",
+            name: "Location",
             id: "location"
         }, {
-            name: "Geocache-description:",
+            name: "Geocache-description",
             id: "description"
         }, {
-            name: "Author:",
+            name: "Author",
             id: "user"
         }];
         const labelsWithInputs = [];
@@ -340,6 +340,10 @@ async function getCoordinates(location) {
         .then(data => {
             const coordinates = data.results[0].geometry.location;
             return coordinates;
+        })
+        .catch(error => {
+            alert(`Wrong location: ${location}! Please modify geocache.`)
+            console.error(error);
         });
 
 }
@@ -371,7 +375,7 @@ async function initMap() {
 
     const krakow = { lat: 50.0647, lng: 19.9450 };
     const map = new google.maps.Map(document.querySelector(".map"), {
-        zoom: 12,
+        zoom: 11,
         center: krakow
     });
     const listOfMarkers = [];
