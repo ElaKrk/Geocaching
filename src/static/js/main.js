@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", function (event) {
 
-
     const boxTable = document.querySelector(".js-box-table");
     const boxForm = document.querySelector(".js-box-form");
 
@@ -20,7 +19,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
         return { title, location, description, user };
     }
 
-
     function createForm(id, action, method, buttonInnerText) {
         const form = document.createElement("form");
         form.id = id;
@@ -34,16 +32,20 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
         const inputs = [{
             name: "Title",
-            id: "title"
+            id: "title",
+            placeholder: "Short title"
         }, {
             name: "Location",
-            id: "location"
+            id: "location",
+            placeholder: "Street 01, Kraków"
         }, {
             name: "Geocache-description",
-            id: "description"
+            id: "description",
+            placeholder: "Short description of a puzzle or directions to a hidden treasure."
         }, {
             name: "Author",
-            id: "user"
+            id: "user",
+            placeholder: "Stranger"
         }];
         const labelsWithInputs = [];
         inputs.forEach((input) => {
@@ -53,6 +55,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
             textarea.id = input.id;
             textarea.name = input.id;
+            textarea.placeholder = input.placeholder;
             textarea.required = true;
 
             label.appendChild(textarea);
@@ -125,14 +128,14 @@ document.addEventListener("DOMContentLoaded", function (event) {
         } else {
             buttonShowFormToModify.innerText = "Modify";
             const divWithForm = document.querySelector(".box-form-to-modify");
-            tableHeader.removeChild(divWithForm);
-            tableHeader.setAttribute("class", "title");
-
-            hideFormToModify = false;
+            if (divWithForm.parentNode === tableHeader) {
+                tableHeader.removeChild(divWithForm);
+                tableHeader.setAttribute("class", "title");
+                hideFormToModify = false;
+            }
+            
         }
     }
-
-
 
     async function deleteGeolocationAndUpdateTable(event) {
         event.preventDefault();
@@ -155,7 +158,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
         return buttonShowFormToModify;
     }
-
 
     function createRowWithTitle(geocache) {
         const tableRow = document.createElement("tr");
@@ -366,7 +368,6 @@ async function getEnrichedGeocaches() {
         }
     });
     return Promise.all(listOfPromises);
-
 }
 
 
